@@ -1,5 +1,5 @@
-import {JwtRepository} from "../repositories/jwt.ts"
-import {User} from "../schema/jwt.ts"
+import {JwtRepository} from "../repositories/jwt"
+import {User} from "../schema/jwt"
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";

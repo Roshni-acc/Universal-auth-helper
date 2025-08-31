@@ -1,6 +1,6 @@
 // src/repositories/UserRepository.ts
-import { User } from "../schema/jwt.ts";
-import { userModel } from "../models/jwt.ts";
+import { User } from "../schema/jwt";
+import { userModel } from "../models/jwt";
 
 export class JwtRepository {
   private model = new userModel();

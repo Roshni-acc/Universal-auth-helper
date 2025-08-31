@@ -1,4 +1,4 @@
-import { User } from "../schema/jwt.ts";
+import { User } from "../schema/jwt";
 
 export class userModel {
   private users: User[] = [];
