@@ -1,9 +1,11 @@
 import {Response , Request } from "express";
+import {JwtService} from "../services/jwt.ts"
 export class JwtController{
+    private JwtService = new JwtService();
    
     async register (req : Request , res : Response ){
       try{
-        const user = await this.userService.register;
+        const user = await this.JwtService.register;
        return  res.status(201).json({
             status : true,
             message :"User registered successfully",
@@ -16,7 +18,7 @@ export class JwtController{
 
   async login(req: Request, res: Response) {
     try {
-      const token = await this.userService.login(req.body.email, req.body.password);
+      const token = await this.JwtService.login(req.body.email, req.body.password);
        return  res.status(201).json({
             status : true,
             message :"User login  successfully",
@@ -29,7 +31,7 @@ export class JwtController{
 
   async profile(req: Request, res: Response) {
     try {
-      const user = await this.userService.getProfile(req.Id!); // added by middleware
+      const user = await this.JwtService.getProfile(req.Id!); // added by middleware
      return  res.status(201).json({
             status : true,
             message :"User login  successfully",

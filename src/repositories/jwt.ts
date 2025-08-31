@@ -2,7 +2,7 @@
 import { User } from "../schema/jwt.ts";
 import { userModel } from "../models/jwt.ts";
 
-export class UserRepository {
+export class JwtRepository {
   private model = new userModel();
 
   async create(user: User): Promise<User> {
