@@ -12,7 +12,7 @@ export class userModel {
     return this.users.find((user) => user.email === email);
   }
 
-    async findByIf(id: string): Promise<User | undefined> {
+    async findById(id: string): Promise<User | undefined> {
     return this.users.find((user) => user.id === id);
   }
 }
