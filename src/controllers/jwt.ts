@@ -30,20 +30,8 @@ export class JwtController{
     }
   }
 
-//   async profile(req: Request, res: Response) {
-//     try {
-//       const user = await this.JwtService.getProfile(req.id!); // added by middleware
-//      return  res.status(201).json({
-//             status : true,
-//             message :"User login  successfully",
-//             user : user 
-//         });
-//     } catch (err: any) {
-//       res.status(401).json({ error: err.message });
-//     }
-//   }
 
-async profile(req: Request, res: Response) {
+async profile(req: Request, res: Response){
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
