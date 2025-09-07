@@ -10,6 +10,7 @@ mongoose.connect(process.env.MONGO_URI!, {
 .catch(err => console.error(err));
 
 const app: Application = express();
+
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
