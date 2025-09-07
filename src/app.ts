@@ -1,8 +1,13 @@
-import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
+dotenv.config();
+import mongoose from "mongoose";
+import express, { Application, Request, Response } from "express";
 import { JwtController } from "./controllers/jwt";
 
-dotenv.config();
+mongoose.connect(process.env.MONGO_URI!, { 
+})
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.error(err));
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;

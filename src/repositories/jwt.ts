@@ -1,4 +1,4 @@
-// src/repositories/UserRepository.ts
+
 import { User } from "../schema/jwt";
 import { userModel } from "../models/jwt";
 
