@@ -1,19 +1,17 @@
-
+// /repositories/jwt.ts
+import { userModel, IUserModel } from "../models/jwt";
 import { User } from "../schema/jwt";
-import { userModel } from "../models/jwt";
 
 export class JwtRepository {
-  private model = new userModel();
-
-  async create(user: User): Promise<User> {
-    return this.model.create(user);
+  async create(user: User): Promise<IUserModel> {
+    return userModel.create(user);
   }
 
-  async findByEmail(email: string): Promise<User | undefined> {
-    return this.model.findByEmail(email);
+  async findByEmail(email: string): Promise<IUserModel | null> {
+    return userModel.findOne({ email });
   }
 
-  async findById(id: string): Promise<User | undefined> {
-    return this.model.findById(id);
+  async findById(id: string): Promise<IUserModel | null> {
+    return userModel.findById(id);
   }
 }
