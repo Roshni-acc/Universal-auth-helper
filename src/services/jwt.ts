@@ -1,13 +1,13 @@
-import {JwtRepository} from "../repositories/jwt"
-import {User} from "../schema/jwt"
+import { JwtRepository } from "../repositories/jwt";
+import { User } from "../schema/jwt";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
-console.log(JWT_SECRET , "sdjhdw");
+console.log(JWT_SECRET, "sdjhdw");
 
-export class JwtService{
-private  jwtrepo = new JwtRepository();
+export class JwtService {
+  private jwtrepo = new JwtRepository();
   async register(data: { email: string; password: string; name: string }) {
     const existingUser = await this.jwtrepo.findByEmail(data.email);
     if (existingUser) throw new Error("User already exists");
@@ -33,7 +33,11 @@ private  jwtrepo = new JwtRepository();
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) throw new Error("Invalid password");
 
-    return jwt.sign({ id: user._id?.toString(), email: user.email }, JWT_SECRET, { expiresIn: "24h" });
+    return jwt.sign(
+      { id: user._id?.toString(), email: user.email },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
   }
 
   async getProfile(userId: string) {
