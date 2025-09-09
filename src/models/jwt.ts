@@ -18,13 +18,13 @@ const userSchema = new mongoose.Schema<IUserModel>({
   updated_by: { type: String, default: null },
 });
 
-// Transform output: remove __v and move _id to top
+
 userSchema.set("toJSON", {
   versionKey: false, // remove __v
   transform: (doc: Document, ret: Record<string, any>) => {
-    ret._id = ret._id.toString(); // convert ObjectId to string
+    ret._id = ret._id.toString();
     const { _id, ...rest } = ret;
-    return { _id, ...rest }; // move _id to top
+    return { _id, ...rest }; 
   },
 });
 
