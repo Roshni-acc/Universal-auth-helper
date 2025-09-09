@@ -1,4 +1,4 @@
-// /schema/jwt.ts
+
 import mongoose from "mongoose";
 
 export interface User {
