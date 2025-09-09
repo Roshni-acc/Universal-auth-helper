@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema<IUserModel>({
 
 
 userSchema.set("toJSON", {
-  versionKey: false, // remove __v
+  versionKey: false, 
   transform: (doc: Document, ret: Record<string, any>) => {
     ret._id = ret._id.toString();
     const { _id, ...rest } = ret;
