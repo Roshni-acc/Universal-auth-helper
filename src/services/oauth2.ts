@@ -47,6 +47,7 @@ export class OAuth2Service {
       callback: passport.authenticate("google", {
         failureRedirect: "/auth/fail",
         successRedirect: "/auth/success",
+        
       }) as RequestHandler,
     };
   }
