@@ -43,11 +43,12 @@ export class OAuth2Service {
   /** Return ready-to-use Express middlewares */
   public routes() {
     return {
-      login: passport.authenticate("google", { scope: ["profile", "email"] }) as RequestHandler,
+      login: passport.authenticate("google", {
+        scope: ["profile", "email"],
+      }) as RequestHandler,
       callback: passport.authenticate("google", {
         failureRedirect: "/auth/fail",
         successRedirect: "/auth/success",
-        
       }) as RequestHandler,
     };
   }
