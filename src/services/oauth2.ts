@@ -40,7 +40,7 @@ export class OAuth2Service {
     passport.deserializeUser((obj: any, done) => done(null, obj));
   }
 
-  /** Return ready-to-use Express middlewares */
+  
   public routes() {
     return {
       login: passport.authenticate("google", {
