@@ -13,7 +13,7 @@ export class OAuth2Service {
     this.initialize();
   }
 
-  
+
 
   private initialize() {
     passport.use(
@@ -24,7 +24,6 @@ export class OAuth2Service {
           callbackURL: this.config.callbackURL,
         },
         async (accessToken, refreshToken, profile: Profile, done) => {
-          // you could save user in Mongo here via your repository
           const user = {
             provider: "google",
             providerId: profile.id,
