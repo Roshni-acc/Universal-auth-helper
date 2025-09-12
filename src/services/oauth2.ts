@@ -13,6 +13,8 @@ export class OAuth2Service {
     this.initialize();
   }
 
+  
+
   private initialize() {
     passport.use(
       new GoogleStrategy(
@@ -40,7 +42,6 @@ export class OAuth2Service {
     passport.deserializeUser((obj: any, done) => done(null, obj));
   }
 
-  
   public routes() {
     return {
       login: passport.authenticate("google", {
