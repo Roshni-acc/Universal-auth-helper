@@ -13,8 +13,6 @@ export class OAuth2Service {
     this.initialize();
   }
 
-
-
   private initialize() {
     passport.use(
       new GoogleStrategy(
