@@ -5,8 +5,6 @@ export class UserRepository {
   async findByProvider(provider: string,providerId: string): Promise<IUser | null> {
     return UserModel.findOne({ provider, providerId });
   }
-
-
   async findByEmail(email:string): Promise<IUser | null>{
     return UserModel.findOne({ email });
   }
