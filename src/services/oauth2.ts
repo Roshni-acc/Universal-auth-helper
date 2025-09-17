@@ -12,7 +12,6 @@ export class OAuth2Service {
   constructor(private config: OAuthConfig) {
     this.initialize();
   }
-
   private initialize() {
     passport.use(
       new GoogleStrategy(
