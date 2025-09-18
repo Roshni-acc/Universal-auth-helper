@@ -12,6 +12,7 @@ export class OAuth2Service {
   constructor(private config: OAuthConfig) {
     this.initialize();
   }
+
   private initialize() {
     passport.use(
       new GoogleStrategy(
@@ -20,6 +21,7 @@ export class OAuth2Service {
           clientSecret: this.config.clientSecret,
           callbackURL: this.config.callbackURL,
         },
+        
         async (accessToken, refreshToken, profile: Profile, done) => {
           const user = {
             provider: "google",
