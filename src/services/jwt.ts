@@ -45,6 +45,4 @@ export class JwtService {
     if (!user) throw new Error("User not found");
     return { id: user._id?.toString(), email: user.email };
   }
-
-  
 }
