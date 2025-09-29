@@ -42,7 +42,6 @@ export class JwtService {
 
   async getProfile(userId: string) {
     const user = await this.jwtrepo.findById(userId);
-    
     if (!user) throw new Error("User not found");
     return { id: user._id?.toString(), email: user.email };
   }
