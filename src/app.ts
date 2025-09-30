@@ -24,10 +24,6 @@ app.get("/profile", (req: Request, res: Response) => jwtController.profile(req, 
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-
-
-
-
 });
 
  export { auth2Controller } from "./controllers/oAuth2";
