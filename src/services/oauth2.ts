@@ -4,6 +4,7 @@ import { Auth2Config } from "../config/auth2config";
 
 export class Auth2Service {
   private userRepo = new UserRepository();
+  
 
   constructor(private config: Auth2Config) {
     this.initialize();
