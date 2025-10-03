@@ -9,6 +9,7 @@ export class Auth2Service {
   constructor(private config: Auth2Config) {
     this.initialize();
   }
+  
 
   private initialize() {
     Object.entries(this.config).forEach(([provider, { strategy, options }]) => {
