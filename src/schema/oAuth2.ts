@@ -16,4 +16,6 @@ const UserSchema = new Schema<IUser>({
   name: { type: String, required: false },
 });
 
-export const UserModel = mongoose.model<IUser>("User", UserSchema);
+// export const UserModel = mongoose.model<IUser>("User", UserSchema);
+export const UserModel =
+  mongoose.models.OAuthUser || mongoose.model<IUser>("OAuthUser", UserSchema);
