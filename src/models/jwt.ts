@@ -1,5 +1,4 @@
-// import mongoose, { model, Document } from "mongoose";
-import mongoose, { model, models } from "mongoose";
+import mongoose, { model, Document } from "mongoose";
 
 export interface IUserModel extends Document {
   email: string;
@@ -29,7 +28,4 @@ userSchema.set("toJSON", {
   },
 });
 
-// export const userModel = model<IUserModel>("User", userSchema);
-
-export const userModel =
-  models.User || model<IUserModel>("User", userSchema);
+export const userModel = model<IUserModel>("User", userSchema);
