@@ -48,8 +48,6 @@ export class Auth2Service {
     };
   }
 
-  // Return passport-ready routes for a provider
-  // check routes
   public routes(provider: string) {
     const cfg = this.config[provider];
     if (!cfg) throw new Error(`Provider not configured: ${provider}`);
