@@ -40,7 +40,6 @@ export class Auth2Service {
             name: profile.displayName || profile.username,
           });
         }
-
         return done(null, user);
       } catch (err) {
         return done(err, null);
