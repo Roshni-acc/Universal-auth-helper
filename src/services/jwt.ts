@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
-console.log(JWT_SECRET, "sdjhdw");
+
 
 export class JwtService {
   private jwtrepo = new JwtRepository();
