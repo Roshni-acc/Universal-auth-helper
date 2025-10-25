@@ -4,13 +4,10 @@ import { Auth2Config } from "../config/auth2config";
 
 export class Auth2Service {
   private userRepo = new UserRepository();
-  
-
   constructor(private config: Auth2Config) {
     this.initialize();
   }
   
-
   private initialize() {
     Object.entries(this.config).forEach(([provider, { strategy, options }]) => {
       passport.use(
@@ -46,7 +43,6 @@ export class Auth2Service {
       }
     };
   }
-
   public routes(provider: string) {
     const cfg = this.config[provider];
     if (!cfg) throw new Error(`Provider not configured: ${provider}`);
