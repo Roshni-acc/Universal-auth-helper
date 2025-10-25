@@ -2,9 +2,9 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
   email?: string;
-  password?: string;   // for JWT users (optional)
+  password?: string;  
   provider?: string;   // e.g. "google", "github"
-  providerId?: string; // unique ID from OAuth provider
+  providerId?: string; 
   name?: string;
 }
 
