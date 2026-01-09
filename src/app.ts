@@ -7,11 +7,10 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import passport from "passport";
 import cookieParser from "cookie-parser";
-import "./types/express-session";
 
 import { JwtController } from "./controllers/jwt";
 import { auth2Controller } from "./controllers/oAuth2";
-import { Auth2Config } from "./config/auth2config";
+import { getAuth2Config } from "./config/auth2config";
 
 // Connect to MongoDB
 mongoose
@@ -63,7 +62,7 @@ app.get("/profile", (req: Request, res: Response) =>
 );
 
 // OAuth2 Routes (mounted at /auth)
-app.use("/auth", auth2Controller(Auth2Config));
+app.use("/auth", auth2Controller(getAuth2Config()));
 
 // Session Routes (for session-based auth)
 app.post("/session/login", (req: Request, res: Response) => {

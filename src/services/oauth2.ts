@@ -20,7 +20,12 @@ export class Auth2Service {
 
     passport.serializeUser((user, done) => done(null, (user as any)._id));
     passport.deserializeUser(async (id: string, done) => {
-      done(null, { _id: id });
+      try {
+        const user = await this.userRepo.findById(id);
+        done(null, user);
+      } catch (err) {
+        done(err, null);
+      }
     });
   }
 

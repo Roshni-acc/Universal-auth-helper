@@ -11,14 +11,20 @@ export interface ProviderConfig {
   scope?: string[];
 }
 
-export const Auth2Config: { [key: string]: ProviderConfig } = {
-  google: {
-    strategy: GoogleStrategy,
-    options: {
-      clientID: process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "YOUR_GOOGLE_CLIENT_SECRET",
-      callbackURL: "/auth/google/callback",
+// Function to get config (called after dotenv loads)
+export function getAuth2Config(): { [key: string]: ProviderConfig } {
+  return {
+    google: {
+      strategy: GoogleStrategy,
+      options: {
+        clientID: process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID",
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET || "YOUR_GOOGLE_CLIENT_SECRET",
+        callbackURL: "/auth/google/callback",
+      },
+      scope: ["profile", "email"],
     },
-    scope: ["profile", "email"],
-  },
-};
+  };
+}
+
+// For backwards compatibility
+export const Auth2Config = getAuth2Config();
