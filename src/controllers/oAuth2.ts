@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { Auth2Service } from "../services/oauth2";
-import { Auth2Config } from "../config/auth2config";
+import { ProviderConfig } from "../config/auth2config";
 
-export function auth2Controller(config: Auth2Config) {
+export function auth2Controller(config: { [key: string]: ProviderConfig }) {
   const router = Router();
   const service = new Auth2Service(config);
 

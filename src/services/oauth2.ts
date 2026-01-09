@@ -1,19 +1,19 @@
 import passport from "passport";
 import { UserRepository } from "../repositories/oAuth2";
-import { Auth2Config } from "../config/auth2config";
+import { ProviderConfig } from "../config/auth2config";
 
 export class Auth2Service {
   private userRepo = new UserRepository();
-  constructor(private config: Auth2Config) {
+  constructor(private config: { [key: string]: ProviderConfig }) {
     this.initialize();
   }
-  
+
   private initialize() {
     Object.entries(this.config).forEach(([provider, { strategy, options }]) => {
       passport.use(
         new strategy(
           options,
-          this.verifyUser(provider) 
+          this.verifyUser(provider)
         )
       );
     });
