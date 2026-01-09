@@ -11,6 +11,7 @@
     "start": "node dist/app.js"
   },
   "dependencies": {
+    "@types/request": "^2.48.13",
     "bcryptjs": "^3.0.2",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.7",
@@ -25,12 +26,12 @@
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
     "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.3",
+    "@types/express": "^5.0.6",
     "@types/express-session": "^1.18.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.27",
     "@types/passport": "^1.0.17",
-    "@types/passport-google-oauth20": "^2.0.16",
+    "@types/passport-google-oauth20": "^2.0.17",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
