@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import { JwtController } from "./controllers/jwt";
 import { auth2Controller } from "./controllers/oAuth2";
 import { getAuth2Config } from "./config/auth2config";
+import { checkBlacklist } from "./middleware/blacklist";
 
 // Connect to MongoDB
 mongoose
@@ -50,6 +51,7 @@ app.use(passport.session());
 // JWT Controller
 const jwtController = new JwtController();
 
+
 // JWT Routes
 app.post("/register", (req: Request, res: Response) =>
   jwtController.register(req, res)
@@ -57,8 +59,11 @@ app.post("/register", (req: Request, res: Response) =>
 app.post("/login", (req: Request, res: Response) =>
   jwtController.login(req, res)
 );
-app.get("/profile", (req: Request, res: Response) =>
+app.get("/profile", checkBlacklist, (req: Request, res: Response) =>
   jwtController.profile(req, res)
+);
+app.post("/logout", checkBlacklist, (req: Request, res: Response) =>
+  jwtController.logout(req, res)
 );
 
 // OAuth2 Routes (mounted at /auth)

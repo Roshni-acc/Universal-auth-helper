@@ -1,5 +1,6 @@
 import { JwtRepository } from "../repositories/jwt";
 import { User } from "../schema/jwt";
+import { BlacklistRepository } from "../repositories/blacklist";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -8,6 +9,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
 export class JwtService {
   private jwtrepo = new JwtRepository();
+  private blacklistRepo = new BlacklistRepository();
+
   async register(data: { email: string; password: string; name: string }) {
     const existingUser = await this.jwtrepo.findByEmail(data.email);
     if (existingUser) throw new Error("User already exists");
@@ -23,7 +26,10 @@ export class JwtService {
       updated_by: null,
     };
 
-    return this.jwtrepo.create(newUser);
+    const createdUser = await this.jwtrepo.create(newUser);
+    // Return user without password
+    const { password, ...userWithoutPassword } = createdUser.toObject ? createdUser.toObject() : createdUser;
+    return userWithoutPassword;
   }
 
   async login(email: string, password: string): Promise<string> {
@@ -38,6 +44,10 @@ export class JwtService {
       JWT_SECRET,
       { expiresIn: "24h" }
     );
+  }
+
+  async logout(token: string) {
+    await this.blacklistRepo.add(token);
   }
 
   async getProfile(userId: string) {
