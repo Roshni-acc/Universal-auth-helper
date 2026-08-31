@@ -1,132 +1,178 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import mongoose from "mongoose";
 import express, { Application, Request, Response } from "express";
-import session from "express-session";
-import MongoStore from "connect-mongo";
-import passport from "passport";
-import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
 
+import { UniversalAuth } from "./sdk/UniversalAuth";
 import { JwtController } from "./controllers/jwt";
 import { auth2Controller } from "./controllers/oAuth2";
 import { getAuth2Config } from "./config/auth2config";
 import { checkBlacklist } from "./middleware/blacklist";
-
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI!)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error(err));
+import { authMiddleware } from "./middleware/jwt";
+import { BlacklistRepository } from "./repositories/blacklist";
+import { JwtRepository } from "./repositories/jwt";
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
+// Initialize Universal Auth Engine & SDK Middleware
+UniversalAuth.init(app, {
+  mongoUri: process.env.MONGO_URI,
+  jwtSecret: process.env.JWT_SECRET || "universal_auth_default_jwt_secret_2026",
+  sessionSecret: process.env.SESSION_SECRET || "universal_auth_default_session_secret",
+  enableUI: true
+});
 
-// Session middleware (required for OAuth2 and session-based auth)
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "default_session_secret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI!,
-      collectionName: "sessions",
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
-  })
-);
-
-// Passport initialization (for OAuth2)
-app.use(passport.initialize());
-app.use(passport.session());
-
-// JWT Controller
 const jwtController = new JwtController();
+const jwtRepo = new JwtRepository();
+const blacklistRepo = new BlacklistRepository();
 
-
-// JWT Routes
+// ==========================================
+// 1. JWT AUTHENTICATION ROUTES
+// ==========================================
 app.post("/register", (req: Request, res: Response) =>
   jwtController.register(req, res)
 );
+
 app.post("/login", (req: Request, res: Response) =>
   jwtController.login(req, res)
 );
-app.get("/profile", checkBlacklist, (req: Request, res: Response) =>
+
+app.get("/profile", checkBlacklist, authMiddleware, (req: Request, res: Response) =>
   jwtController.profile(req, res)
 );
+
 app.post("/logout", checkBlacklist, (req: Request, res: Response) =>
   jwtController.logout(req, res)
 );
 
-// OAuth2 Routes (mounted at /auth)
-app.use("/auth", auth2Controller(getAuth2Config()));
-
-// Session Routes (for session-based auth)
+// ==========================================
+// 2. SESSION-BASED AUTHENTICATION ROUTES
+// ==========================================
 app.post("/session/login", (req: Request, res: Response) => {
-  // Simple session-based login
-  req.session.user = req.body;
-  res.json({ message: "Session login successful", user: req.body });
+  if (req.session) {
+    (req.session as any).user = {
+      id: "sess_" + Math.random().toString(36).substring(2, 9),
+      name: req.body.name || "Session User",
+      email: req.body.email || "session@example.com",
+      loggedInAt: new Date()
+    };
+  }
+  res.json({
+    status: true,
+    message: "Session cookie created successfully",
+    user: (req.session as any)?.user
+  });
 });
 
 app.get("/session/profile", (req: Request, res: Response) => {
-  if (req.session.user) {
-    res.json({ user: req.session.user });
+  if (req.session && (req.session as any).user) {
+    res.json({ status: true, user: (req.session as any).user });
   } else {
-    res.status(401).json({ message: "Not authenticated" });
+    res.status(401).json({ status: false, message: "No active session cookie found" });
   }
 });
 
 app.post("/session/logout", (req: Request, res: Response) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: "Logout failed" });
-    }
-    res.clearCookie("connect.sid");
-    res.json({ message: "Logged out successfully" });
-  });
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) return res.status(500).json({ status: false, message: "Session destruction failed" });
+      res.clearCookie("connect.sid");
+      res.json({ status: true, message: "Session destroyed and cookie cleared" });
+    });
+  } else {
+    res.json({ status: true, message: "No active session" });
+  }
 });
 
-// Health check
-app.get("/", (_req: Request, res: Response) => {
+// ==========================================
+// 3. OAUTH2 SOCIAL AUTHENTICATION ROUTES
+// ==========================================
+app.use("/auth", auth2Controller(getAuth2Config()));
+
+// ==========================================
+// 4. SYSTEM STATS & METRICS API
+// ==========================================
+app.get("/api/stats", async (_req: Request, res: Response) => {
+  try {
+    const usersCount = await jwtRepo.count();
+    const blacklistCount = await blacklistRepo.count();
+    const isMongoConnected = mongoose.connection.readyState === 1;
+
+    res.json({
+      status: true,
+      dbConnected: isMongoConnected,
+      usersCount,
+      blacklistCount,
+      environment: process.env.NODE_ENV || "development",
+      uptimeSeconds: Math.floor(process.uptime())
+    });
+  } catch (err: any) {
+    res.status(500).json({ status: false, error: err.message });
+  }
+});
+
+app.get("/api/health", (_req: Request, res: Response) => {
   res.json({
-    message: "Universal Auth Helper API",
-    endpoints: {
-      jwt: {
-        register: "POST /register",
-        login: "POST /login",
-        profile: "GET /profile (Authorization: Bearer <token>)",
-      },
-      oauth2: {
-        google: "GET /auth/google",
-        callback: "GET /auth/google/callback",
-        success: "GET /auth/success",
-        fail: "GET /auth/fail",
-      },
-      session: {
-        login: "POST /session/login",
-        profile: "GET /session/profile",
-        logout: "POST /session/logout",
-      },
-    },
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0",
+    services: {
+      jwtEngine: "active",
+      oauth2Module: "active",
+      sessionStore: "active"
+    }
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+// ==========================================
+// 5. RENDER KEEP-ALIVE PING ENDPOINT & SERVICE
+// ==========================================
+app.get(["/ping", "/api/ping"], (_req: Request, res: Response) => {
+  res.json({
+    status: "pong",
+    message: "Server is awake and active",
+    timestamp: new Date().toISOString(),
+    uptimeSeconds: Math.floor(process.uptime())
+  });
 });
 
-// Re-export for library usage
-export { auth2Controller } from "./controllers/oAuth2";
-export { Auth2Config } from "./config/auth2config";
+// Auto-Ping Background Worker (Fires every 5 minutes = 300,000 ms to prevent Render free-tier sleep)
+const PING_INTERVAL_MS = 5 * 60 * 1000;
+let pingCount = 0;
+
+setInterval(async () => {
+  try {
+    pingCount++;
+    const serverUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    const http = require("http");
+    const https = require("https");
+    const client = serverUrl.startsWith("https") ? https : http;
+
+    client.get(`${serverUrl}/ping`, (res: any) => {
+      console.log(`📡 [Render Keep-Alive #${pingCount}] Self-ping to ${serverUrl}/ping - Status ${res.statusCode}`);
+    }).on("error", (err: any) => {
+      console.log(`📡 [Render Keep-Alive #${pingCount}] Heartbeat ping tick active (${err.message})`);
+    });
+  } catch (e: any) {
+    console.warn("[Keep-Alive] Ping tick handler warning:", e.message);
+  }
+}, PING_INTERVAL_MS);
+
+// ==========================================
+// SERVER STARTUP
+// ==========================================
+app.listen(PORT, () => {
+  console.log(`🚀 [UniversalAuth] Studio running on http://localhost:${PORT}`);
+  console.log(`⏱️ [Render Keep-Alive] 5-minute auto-ping service active.`);
+});
+
+
+// Re-export for package / SDK consumers
+export { UniversalAuth } from "./sdk/UniversalAuth";
 export { JwtController } from "./controllers/jwt";
+export { auth2Controller } from "./controllers/oAuth2";
 export { JwtService } from "./services/jwt";
 export { Auth2Service } from "./services/oauth2";
 export { SessionService } from "./services/session";
