@@ -65,10 +65,21 @@ export class UniversalAuth {
       console.log("ℹ️ [UniversalAuth] No MONGO_URI provided. Running in resilient Memory Store mode.");
     }
 
-    // 2. Base Express Middlewares
+    // 2. Base Express Middlewares & CORS
+    app.use((req, res, next) => {
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+      if (req.method === "OPTIONS") {
+        return res.sendStatus(200);
+      }
+      next();
+    });
+
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
+
 
     // 3. Session Middleware
     const sessionStore = mongoUri && instance.isMongoConnected

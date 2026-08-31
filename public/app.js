@@ -1,5 +1,9 @@
 // Universal Auth Studio - Interactive App Logic
 
+const API_BASE_URL = window.location.origin.includes("localhost") || window.location.origin.includes("127.0.0.1")
+  ? ""
+  : "https://universal-auth-helper.onrender.com";
+
 document.addEventListener("DOMContentLoaded", () => {
   let currentJwtToken = localStorage.getItem("universal_auth_token") || null;
 
@@ -7,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initSubTabs();
   initFormListeners();
+  initOAuthLinks();
   checkOAuthRedirect();
   fetchSystemStats();
   
@@ -53,6 +58,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Attach dynamic API_BASE_URL to OAuth social links
+  function initOAuthLinks() {
+    if (API_BASE_URL) {
+      document.querySelectorAll(".oauth-btn").forEach(btn => {
+        const href = btn.getAttribute("href");
+        if (href && href.startsWith("/")) {
+          btn.setAttribute("href", API_BASE_URL + href);
+        }
+      });
+    }
+  }
+
   // 3. API & Console Logging Utility
   function logApi(method, url, status, data, durationMs) {
     const consoleLogs = document.getElementById("console-logs");
@@ -85,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4. Fetch System Metrics & MongoDB Status
   async function fetchSystemStats() {
     try {
-      const res = await fetch("/api/stats");
+      const res = await fetch(`${API_BASE_URL}/api/stats`);
       const data = await res.json();
 
       if (data.status) {
@@ -120,13 +137,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("reg-password").value;
 
       try {
-        const res = await fetch("/register", {
+        const res = await fetch(`${API_BASE_URL}/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email, password })
         });
         const data = await res.json();
-        logApi("POST", "/register", res.status, data, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/register`, res.status, data, Date.now() - start);
 
         if (res.ok && data.status) {
           alert("🎉 Registration successful! You can now log in.");
@@ -135,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Registration Error: " + (data.error || data.message || "Failed"));
         }
       } catch (err) {
-        logApi("POST", "/register", 500, { error: err.message }, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/register`, 500, { error: err.message }, Date.now() - start);
       }
     });
 
@@ -147,13 +164,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("login-password").value;
 
       try {
-        const res = await fetch("/login", {
+        const res = await fetch(`${API_BASE_URL}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-        logApi("POST", "/login", res.status, data, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/login`, res.status, data, Date.now() - start);
 
         if (res.ok && data.token) {
           currentJwtToken = data.token;
@@ -164,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Login Error: " + (data.error || "Invalid credentials"));
         }
       } catch (err) {
-        logApi("POST", "/login", 500, { error: err.message }, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/login`, 500, { error: err.message }, Date.now() - start);
       }
     });
 
@@ -176,12 +193,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const start = Date.now();
       try {
-        const res = await fetch("/profile", {
+        const res = await fetch(`${API_BASE_URL}/profile`, {
           method: "GET",
           headers: { "Authorization": `Bearer ${currentJwtToken}` }
         });
         const data = await res.json();
-        logApi("GET", "/profile", res.status, data, Date.now() - start);
+        logApi("GET", `${API_BASE_URL}/profile`, res.status, data, Date.now() - start);
 
         if (res.ok) {
           document.getElementById("decoded-payload-box").textContent = JSON.stringify(data, null, 2);
@@ -190,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Profile Access Denied: " + (data.message || data.error));
         }
       } catch (err) {
-        logApi("GET", "/profile", 500, { error: err.message }, Date.now() - start);
+        logApi("GET", `${API_BASE_URL}/profile`, 500, { error: err.message }, Date.now() - start);
       }
     });
 
@@ -199,12 +216,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!currentJwtToken) return;
       const start = Date.now();
       try {
-        const res = await fetch("/logout", {
+        const res = await fetch(`${API_BASE_URL}/logout`, {
           method: "POST",
           headers: { "Authorization": `Bearer ${currentJwtToken}` }
         });
         const data = await res.json();
-        logApi("POST", "/logout", res.status, data, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/logout`, res.status, data, Date.now() - start);
 
         currentJwtToken = null;
         localStorage.removeItem("universal_auth_token");
@@ -215,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchSystemStats();
         alert("🚫 Logged out. Token blacklisted!");
       } catch (err) {
-        logApi("POST", "/logout", 500, { error: err.message }, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/logout`, 500, { error: err.message }, Date.now() - start);
       }
     });
 
@@ -227,17 +244,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("sess-email").value;
 
       try {
-        const res = await fetch("/session/login", {
+        const res = await fetch(`${API_BASE_URL}/session/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email })
         });
         const data = await res.json();
-        logApi("POST", "/session/login", res.status, data, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/session/login`, res.status, data, Date.now() - start);
 
         document.getElementById("session-output-box").textContent = JSON.stringify(data, null, 2);
       } catch (err) {
-        logApi("POST", "/session/login", 500, { error: err.message }, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/session/login`, 500, { error: err.message }, Date.now() - start);
       }
     });
 
@@ -245,12 +262,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-session-profile").addEventListener("click", async () => {
       const start = Date.now();
       try {
-        const res = await fetch("/session/profile");
+        const res = await fetch(`${API_BASE_URL}/session/profile`);
         const data = await res.json();
-        logApi("GET", "/session/profile", res.status, data, Date.now() - start);
+        logApi("GET", `${API_BASE_URL}/session/profile`, res.status, data, Date.now() - start);
         document.getElementById("session-output-box").textContent = JSON.stringify(data, null, 2);
       } catch (err) {
-        logApi("GET", "/session/profile", 500, { error: err.message }, Date.now() - start);
+        logApi("GET", `${API_BASE_URL}/session/profile`, 500, { error: err.message }, Date.now() - start);
       }
     });
 
@@ -258,12 +275,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-session-logout").addEventListener("click", async () => {
       const start = Date.now();
       try {
-        const res = await fetch("/session/logout", { method: "POST" });
+        const res = await fetch(`${API_BASE_URL}/session/logout`, { method: "POST" });
         const data = await res.json();
-        logApi("POST", "/session/logout", res.status, data, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/session/logout`, res.status, data, Date.now() - start);
         document.getElementById("session-output-box").textContent = JSON.stringify(data, null, 2);
       } catch (err) {
-        logApi("POST", "/session/logout", 500, { error: err.message }, Date.now() - start);
+        logApi("POST", `${API_BASE_URL}/session/logout`, 500, { error: err.message }, Date.now() - start);
       }
     });
 
