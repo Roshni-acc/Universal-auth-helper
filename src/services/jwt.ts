@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 
 // const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
-const JWT_SECRET2 = process.env.JWT_SECRET2;
+const JWT_SECRET = process.env.JWT_SECRET2;
 
 
 export class JwtService {
@@ -43,11 +43,10 @@ export class JwtService {
 
     return jwt.sign(
       { id: user._id?.toString(), email: user.email },
-      JWT_SECRET2,
+      JWT_SECRET,
       { expiresIn: "24h" }
     );
   }
-
   async logout(token: string) {
     await this.blacklistRepo.add(token);
   }

@@ -35,5 +35,9 @@ export class SessionService {
                 resolve();
             });
         });
+
+
+
+         // new code 
     }
 }
