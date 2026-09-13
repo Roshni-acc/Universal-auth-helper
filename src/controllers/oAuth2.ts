@@ -9,7 +9,16 @@ export function auth2Controller(config: { [key: string]: ProviderConfig }) {
   // Dynamically attach configured providers
   Object.keys(config).forEach((provider) => {
     try {
-      router.get(`/${provider}`, service.routes(provider).login);
+      router.get(`/${provider}`, (req, res, next) => {
+        const providerCfg = config[provider];
+        const clientID = providerCfg?.options?.clientID;
+        if (!clientID || clientID.startsWith("YOUR_") || clientID.includes("CLIENT_ID")) {
+          const errMsg = encodeURIComponent(`OAuth provider '${provider}' is not configured with valid API credentials in .env. Please set ${provider.toUpperCase()}_CLIENT_ID and ${provider.toUpperCase()}_CLIENT_SECRET or click 'Simulate OAuth'.`);
+          return res.redirect(`/?oauth=error&provider=${provider}&message=${errMsg}`);
+        }
+        return service.routes(provider).login(req, res, next);
+      });
+
       router.get(`/${provider}/callback`, service.routes(provider).callback);
     } catch (e) {
       console.warn(`[OAuth2] Provider ${provider} skipped or not configured.`);
@@ -34,16 +43,19 @@ export function auth2Controller(config: { [key: string]: ProviderConfig }) {
     }
 
     // Direct redirect back to studio UI with query param
-    return res.redirect(`/?oauth=success&provider=${provider}&email=${encodeURIComponent(mockUser.email)}`);
+    return res.redirect(`/?oauth=success&provider=${provider}&email=${encodeURIComponent(mockUser.email)}&name=${encodeURIComponent(mockUser.name)}`);
   });
 
   router.get("/success", (req, res) => {
-    const user = req.user || (req.session as any)?.user;
-    res.json({ status: true, message: "OAuth authentication successful", user });
+    const user = (req.user as any) || (req.session as any)?.user;
+    if (user) {
+      return res.redirect(`/?oauth=success&provider=${user.provider || "google"}&email=${encodeURIComponent(user.email || "")}&name=${encodeURIComponent(user.name || "")}`);
+    }
+    res.redirect("/?oauth=error&message=No+authenticated+user+session+found");
   });
 
   router.get("/fail", (_req, res) => {
-    res.status(401).json({ status: false, message: "OAuth authentication failed or was cancelled" });
+    res.redirect("/?oauth=error&message=OAuth+authentication+failed+or+was+cancelled");
   });
 
   return router;

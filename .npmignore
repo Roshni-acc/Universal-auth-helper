@@ -1,0 +1,8 @@
+# Exclude raw dev source files (already compiled into dist/ and public/)
+client/
+src/
+tsconfig.json
+vite.config.ts
+.gitignore
+.env
+*.log

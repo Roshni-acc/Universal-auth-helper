@@ -26,7 +26,10 @@ export class UserRepository {
 
   async findById(id: string): Promise<any | null> {
     if (mongoose.connection.readyState === 1) {
-      return UserModel.findById(id);
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        const user = await UserModel.findById(id);
+        if (user) return user;
+      }
     }
     return memoryOAuthUsers.get(id) || null;
   }

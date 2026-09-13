@@ -100,11 +100,23 @@ app.get("/api/stats", async (_req: Request, res: Response) => {
     const blacklistCount = await blacklistRepo.count();
     const isMongoConnected = mongoose.connection.readyState === 1;
 
+    let npmDownloads = 0;
+    try {
+      const axios = require("axios");
+      const npmRes = await axios.get("https://api.npmjs.org/downloads/point/last-month/universal-auth-helper", { timeout: 2000 });
+      if (npmRes.data && typeof npmRes.data.downloads === "number") {
+        npmDownloads = npmRes.data.downloads;
+      }
+    } catch (e) {
+      npmDownloads = 0;
+    }
+
     res.json({
       status: true,
       dbConnected: isMongoConnected,
       usersCount,
       blacklistCount,
+      npmDownloads,
       environment: process.env.NODE_ENV || "development",
       uptimeSeconds: Math.floor(process.uptime())
     });
