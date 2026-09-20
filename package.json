@@ -2,12 +2,31 @@
   "name": "universal-auth-helper",
   "version": "1.0.0",
   "main": "dist/app.js",
+  "description": "Production-ready Universal Authentication Engine for Express & MongoDB with embedded React Developer Studio & live token telemetry.",
+  "keywords": [
+    "express",
+    "auth",
+    "jwt",
+    "oauth2",
+    "passport",
+    "mongodb",
+    "session",
+    "authentication",
+    "universal-auth"
+  ],
+  "author": "Roshni Singh",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Roshni-acc/Universal-auth-helper.git"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "build": "tsc",
+    "build:ui": "vite build",
+    "build": "vite build && tsc",
     "start": "node dist/app.js"
   },
   "dependencies": {
@@ -20,6 +39,9 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/request": "^2.48.13",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "axios": "^1.20.0",
     "bcryptjs": "^3.0.2",
     "connect-mongo": "^5.1.0",
@@ -28,14 +50,18 @@
     "express": "^5.1.0",
     "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^1.45.0",
     "mongoose": "^8.18.0",
     "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.2"
+    "ts-node-dev": "^2.0.0"
   }
 }

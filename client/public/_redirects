@@ -1,0 +1,4 @@
+# Netlify Redirects & API Proxy Configuration
+/api/*  https://universal-auth-helper.onrender.com/api/:splat  200!
+/auth/* https://universal-auth-helper.onrender.com/auth/:splat 200!
+/*      /index.html                                            200
