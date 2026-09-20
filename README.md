@@ -48,7 +48,7 @@ When your server starts, navigate to `http://localhost:5000` to access the embed
 - **Session Cookie Authentication**: HttpOnly session cookie authentication backed by MongoStore or MemoryStore.
 - **OAuth2 Social Integration**: Unified Passport strategies for Google, GitHub, and zero-config local simulation mode.
 - **Embedded React Developer Studio**: Built-in React 18 UI served directly from your app for live documentation and package telemetry.
-- **Resilient Memory Fallback**: Automatically falls back to memory store if MongoDB connection drops, preventing server crashes.
+- **DeploySense AI Monitoring**: Real-time automated crash reporting, uncaught exception monitoring, and route error tracking for local & production servers.
 
 ---
 
@@ -64,12 +64,14 @@ Developers integrating this library should be aware of the following security as
 
 ---
 
-## ⚠️ Disclaimer
+## 📖 Guides & Documentation
 
-> **DISCLAIMER**: This package is provided **"as is"** without warranties of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, or non-infringement. Users and developers are solely responsible for evaluating, testing, and securing their authentication implementation and application environment.
+- [DeploySense AI Integration Guide](DEPLOYSENSE_GUIDE.md): Local development setup, custom endpoint routing, and cloud error tracking.
+- [Publishing & Lifecycle Maintenance Guide](PUBLISHING_GUIDE.md): Complete instructions on publishing to NPM, managing live Render/Netlify deployments, releasing package updates, and archiving/deleting project assets.
 
 ---
 
 ## 📄 License
 
 [MIT License](LICENSE) © 2026 Roshni Singh
+

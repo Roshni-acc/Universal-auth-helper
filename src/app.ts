@@ -12,6 +12,10 @@ import { checkBlacklist } from "./middleware/blacklist";
 import { authMiddleware } from "./middleware/jwt";
 import { BlacklistRepository } from "./repositories/blacklist";
 import { JwtRepository } from "./repositories/jwt";
+import { initDeploySenseGlobalLogger, deploySenseExpressMiddleware } from "./middleware/dep";
+
+// Initialize DeploySense AI Monitoring
+initDeploySenseGlobalLogger("universal-auth-helper", process.env.NODE_ENV || "development");
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
@@ -173,6 +177,16 @@ setInterval(async () => {
 }, PING_INTERVAL_MS);
 
 // ==========================================
+// 6. DEPLOYSENSE AI TEST ERROR ENDPOINT
+// ==========================================
+app.get("/api/test-deploysense-error", (_req: Request, _res: Response) => {
+  throw new Error("🧪 Test DeploySense AI exception triggered intentionally!");
+});
+
+// Attach DeploySense AI Express Error Middleware (Catches all route/controller 500 errors)
+app.use(deploySenseExpressMiddleware("universal-auth-helper", process.env.NODE_ENV || "development"));
+
+// ==========================================
 // SERVER STARTUP
 // ==========================================
 app.listen(PORT, () => {
@@ -188,3 +202,4 @@ export { auth2Controller } from "./controllers/oAuth2";
 export { JwtService } from "./services/jwt";
 export { Auth2Service } from "./services/oauth2";
 export { SessionService } from "./services/session";
+export { initDeploySenseGlobalLogger, deploySenseExpressMiddleware, sendDeploySenseLog } from "./middleware/dep";

@@ -11,6 +11,7 @@ import { auth2Controller } from "../controllers/oAuth2";
 import { getAuth2Config, ProviderConfig } from "../config/auth2config";
 import { checkBlacklist } from "../middleware/blacklist";
 import { authMiddleware } from "../middleware/jwt";
+import { initDeploySenseGlobalLogger, deploySenseExpressMiddleware, sendDeploySenseLog } from "../middleware/dep";
 
 export interface UniversalAuthOptions {
   mongoUri?: string;
@@ -19,6 +20,12 @@ export interface UniversalAuthOptions {
   enableOAuth?: boolean;
   enableUI?: boolean;
   oauthConfig?: { [key: string]: ProviderConfig };
+  deploySense?: {
+    enabled?: boolean;
+    url?: string;
+    serviceName?: string;
+    environment?: string;
+  };
 }
 
 export class UniversalAuth {
@@ -80,7 +87,6 @@ export class UniversalAuth {
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
 
-
     // 3. Session Middleware
     const sessionStore = mongoUri && instance.isMongoConnected
       ? MongoStore.create({ mongoUrl: mongoUri, collectionName: "sessions" })
@@ -110,14 +116,37 @@ export class UniversalAuth {
       app.use(express.static(publicPath));
     }
 
+    // 6. Optional DeploySense AI Monitoring Integration
+    const deploySenseOpts = options.deploySense || {};
+    const isDeploySenseEnabled = deploySenseOpts.enabled !== false && (
+      Boolean(deploySenseOpts.url) ||
+      Boolean(process.env.DEPLOYSENSE_URL) ||
+      process.env.DEPLOYSENSE_ENABLED === "true" ||
+      deploySenseOpts.enabled === true
+    );
+
+    if (isDeploySenseEnabled) {
+      initDeploySenseGlobalLogger(
+        deploySenseOpts.serviceName || process.env.SERVICE_NAME || "universal-auth-helper",
+        deploySenseOpts.environment || process.env.NODE_ENV || "development",
+        deploySenseOpts.url || process.env.DEPLOYSENSE_URL
+      );
+    }
+
     return instance;
   }
-
 
   /**
    * Express middleware to authenticate JWT tokens and verify blacklists
    */
   public static jwtMiddleware() {
     return [checkBlacklist, authMiddleware];
+  }
+
+  /**
+   * Returns DeploySense Express Error Middleware for route monitoring
+   */
+  public static deploySenseErrorMiddleware(serviceName?: string, environment?: string, customUrl?: string) {
+    return deploySenseExpressMiddleware({ serviceName, environment, customUrl });
   }
 }
