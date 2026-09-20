@@ -3,7 +3,7 @@ import axios from 'axios';
 // 🚀 GLOBAL PROJECT-WIDE ERROR LISTENER (Place in index.ts / server.js / main.ts)
 // Catches ANY uncaught exception or unhandled promise rejection in your ENTIRE Node.js project!
 export function initDeploySenseGlobalLogger(serviceName = 'my-node-app', environment = 'production') {
-  const API_URL = 'https://deploysense-ai.onrender.com/api/v1/logs/ingest';
+  const API_URL = 'http://localhost:3001/api/v1/logs/ingest';
 
   const sendLog = async (errorLog: string) => {
     try {
@@ -20,6 +20,8 @@ export function initDeploySenseGlobalLogger(serviceName = 'my-node-app', environ
     }
   };
 
+
+  
   // 1. Catch all uncaught synchronous exceptions across the ENTIRE project
   process.on('uncaughtException', (error) => {
     console.error('🔥 Global Uncaught Exception Detected:', error);
