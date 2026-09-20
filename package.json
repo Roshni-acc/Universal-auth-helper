@@ -2,6 +2,7 @@
   "name": "universal-auth-helper",
   "version": "1.0.0",
   "main": "dist/app.js",
+  "types": "dist/app.d.ts",
   "description": "Production-ready Universal Authentication Engine for Express & MongoDB with embedded React Developer Studio & live token telemetry.",
   "keywords": [
     "express",
