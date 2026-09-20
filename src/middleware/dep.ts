@@ -6,7 +6,10 @@ import { Request, Response, NextFunction } from 'express';
  * Checks process.env.DEPLOYSENSE_URL at request runtime to ensure .env settings take effect.
  */
 export function getDeploySenseApiUrl(customUrl?: string): string {
-  const baseUrl = customUrl || process.env.DEPLOYSENSE_URL || 'https://deploysense-ai.onrender.com';
+  const defaultUrl = process.env.NODE_ENV === 'production'
+    ? 'https://deploysense-ai.onrender.com'
+    : 'http://localhost:3001';
+  const baseUrl = customUrl || process.env.DEPLOYSENSE_URL || defaultUrl;
   if (baseUrl.endsWith('/api/v1/logs/ingest')) {
     return baseUrl;
   }
