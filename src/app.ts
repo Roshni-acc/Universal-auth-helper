@@ -183,6 +183,10 @@ app.get("/api/test-deploysense-error", (_req: Request, _res: Response) => {
   throw new Error("🧪 Test DeploySense AI exception triggered intentionally!");
 });
 
+app.get("/api/intentional-bug", (_req: Request, _res: Response) => {
+  throw new Error("🚨 INTENTIONAL BUG: UniversalAuth authentication failure for DeploySense AI UI verification!");
+});
+
 // Attach DeploySense AI Express Error Middleware (Catches all route/controller 500 errors)
 app.use(deploySenseExpressMiddleware("universal-auth-helper", process.env.NODE_ENV || "development"));
 
