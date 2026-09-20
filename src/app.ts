@@ -183,23 +183,6 @@ app.get("/api/test-deploysense-error", (_req: Request, _res: Response) => {
   throw new Error("🧪 Test DeploySense AI exception triggered intentionally!");
 });
 
-app.get("/api/intentional-bug", (_req: Request, _res: Response) => {
-  throw new Error("🚨 INTENTIONAL BUG: UniversalAuth authentication failure for DeploySense AI UI verification!");
-});
-
-app.get("/api/trigger-incident", (_req: Request, _res: Response) => {
-  const error = new Error("🔥 CRITICAL INCIDENT: MongoDB Connection Refused & JwtSecret Key Unreadable!");
-  error.name = "MongoNetworkError";
-  throw error;
-});
-
-app.get("/api/uncaught-error", (_req: Request, _res: Response) => {
-  setImmediate(() => {
-    throw new Error("💥 UNCAUGHT ASYNC EXCEPTION: UniversalAuth Session Store Deadlock");
-  });
-  _res.status(500).json({ status: false, message: "Triggering uncaught async exception" });
-});
-
 // Attach DeploySense AI Express Error Middleware (Catches all route/controller 500 errors)
 app.use(deploySenseExpressMiddleware("universal-auth-helper", process.env.NODE_ENV || "development"));
 
