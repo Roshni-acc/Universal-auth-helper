@@ -174,32 +174,31 @@ setInterval(async () => {
   } catch (e: any) {
     console.warn("[Keep-Alive] Ping tick handler warning:", e.message);
   }
-}, PING_INTERVAL_MS);
+  // ==========================================
+  // 6. DEPLOYSENSE AI TEST ERROR ENDPOINT
+  // ==========================================
+  app.get("/api/test-deploysense-error", (_req: Request, _res: Response) => {
+    throw new Error("🧪 Test DeploySense AI exception triggered intentionally!");
+  });
 
-// ==========================================
-// 6. DEPLOYSENSE AI TEST ERROR ENDPOINT
-// ==========================================
-app.get("/api/test-deploysense-error", (_req: Request, _res: Response) => {
-  throw new Error("🧪 Test DeploySense AI exception triggered intentionally!");
+  // Attach DeploySense AI Express Error Middleware (Catches all route/controller 500 errors)
+  app.use(deploySenseExpressMiddleware("universal-auth-helper", process.env.NODE_ENV || "development"));
+
+  // ==========================================
+  // SERVER STARTUP
+  // ==========================================
+  app.listen(PORT, () => {
+    console.log(`🚀 [UniversalAuth] Studio running on http://localhost:${PORT}`);
+    console.log(`⏱️ [Render Keep-Alive] 5-minute auto-ping service active.`);
+  });
+
+
+  // Re-export for package / SDK consumers
+  export { UniversalAuth } from "./sdk/UniversalAuth";
+  export { JwtController } from "./controllers/jwt";
+  export { auth2Controller } from "./controllers/oAuth2";
+  export { JwtService } from "./services/jwt";
+  export { Auth2Service } from "./services/oauth2";
+  export { SessionService } from "./services/session";
 });
 
-// Attach DeploySense AI Express Error Middleware (Catches all route/controller 500 errors)
-app.use(deploySenseExpressMiddleware("universal-auth-helper", process.env.NODE_ENV || "development"));
-
-// ==========================================
-// SERVER STARTUP
-// ==========================================
-app.listen(PORT, () => {
-  console.log(`🚀 [UniversalAuth] Studio running on http://localhost:${PORT}`);
-  console.log(`⏱️ [Render Keep-Alive] 5-minute auto-ping service active.`);
-});
-
-
-// Re-export for package / SDK consumers
-export { UniversalAuth } from "./sdk/UniversalAuth";
-export { JwtController } from "./controllers/jwt";
-export { auth2Controller } from "./controllers/oAuth2";
-export { JwtService } from "./services/jwt";
-export { Auth2Service } from "./services/oauth2";
-export { SessionService } from "./services/session";
-export { initDeploySenseGlobalLogger, deploySenseExpressMiddleware, sendDeploySenseLog } from "./middleware/dep";

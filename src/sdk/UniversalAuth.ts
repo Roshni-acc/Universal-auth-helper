@@ -7,53 +7,98 @@ import mongoose from "mongoose";
 import path from "path";
 
 import { JwtController } from "../controllers/jwt";
+import { JwtService } from "../services/jwt";
 import { auth2Controller } from "../controllers/oAuth2";
 import { getAuth2Config, ProviderConfig } from "../config/auth2config";
 import { checkBlacklist } from "../middleware/blacklist";
 import { authMiddleware } from "../middleware/jwt";
 import { initDeploySenseGlobalLogger, deploySenseExpressMiddleware, sendDeploySenseLog } from "../middleware/dep";
-
-export interface UniversalAuthOptions {
-  mongoUri?: string;
-  jwtSecret?: string;
-  sessionSecret?: string;
-  enableOAuth?: boolean;
-  enableUI?: boolean;
-  oauthConfig?: { [key: string]: ProviderConfig };
-  deploySense?: {
-    enabled?: boolean;
-    url?: string;
-    serviceName?: string;
-    environment?: string;
-  };
-}
+import { UniversalAuthOptions, RegisterData } from "../types";
 
 export class UniversalAuth {
   private static instance: UniversalAuth;
-  private jwtController: JwtController;
+  public jwtService: JwtService;
+  public jwtController: JwtController;
   private isMongoConnected: boolean = false;
+  private options: UniversalAuthOptions;
 
-  constructor() {
-    this.jwtController = new JwtController();
+  constructor(options: UniversalAuthOptions = {}) {
+    this.options = options;
+
+    if (options.jwtSecret) {
+      process.env.JWT_SECRET = options.jwtSecret;
+    }
+    if (options.sessionSecret) {
+      process.env.SESSION_SECRET = options.sessionSecret;
+    }
+    if (options.mongoUri) {
+      process.env.MONGO_URI = options.mongoUri;
+    }
+
+    this.jwtService = new JwtService({
+      jwtSecret: options.jwtSecret || process.env.JWT_SECRET,
+      expiresIn: options.expiresIn || "24h"
+    });
+    this.jwtController = new JwtController(this.jwtService);
   }
 
-  public static getInstance(): UniversalAuth {
+  public static getInstance(options?: UniversalAuthOptions): UniversalAuth {
     if (!UniversalAuth.instance) {
-      UniversalAuth.instance = new UniversalAuth();
+      UniversalAuth.instance = new UniversalAuth(options);
+    } else if (options) {
+      if (options.jwtSecret) process.env.JWT_SECRET = options.jwtSecret;
+      if (options.sessionSecret) process.env.SESSION_SECRET = options.sessionSecret;
     }
     return UniversalAuth.instance;
+  }
+
+  /**
+   * High-level helper to register a new user
+   */
+  public async register(data: RegisterData) {
+    return this.jwtService.register(data);
+  }
+
+  /**
+   * High-level helper to authenticate and login user
+   */
+  public async login(email: string, password: string) {
+    return this.jwtService.login(email, password);
+  }
+
+  /**
+   * High-level helper to logout and blacklist token
+   */
+  public async logout(token: string) {
+    return this.jwtService.logout(token);
+  }
+
+  /**
+   * High-level helper to get user profile by ID
+   */
+  public async getProfile(userId: string) {
+    return this.jwtService.getProfile(userId);
+  }
+
+  /**
+   * Instance method to protect routes with JWT middleware
+   */
+  public jwtMiddleware() {
+    return UniversalAuth.jwtMiddleware();
   }
 
   /**
    * Initializes UniversalAuth middleware and routes into an Express Application
    */
   public static init(app: Application, options: UniversalAuthOptions = {}): UniversalAuth {
-    const instance = UniversalAuth.getInstance();
+    const instance = UniversalAuth.getInstance(options);
     const mongoUri = options.mongoUri || process.env.MONGO_URI;
-    const jwtSecret = options.jwtSecret || process.env.JWT_SECRET || "universal_auth_default_jwt_secret_2026";
+    const jwtSecret = options.jwtSecret || process.env.JWT_SECRET;
     const sessionSecret = options.sessionSecret || process.env.SESSION_SECRET || "universal_auth_default_session_secret";
 
-    process.env.JWT_SECRET = jwtSecret;
+    if (jwtSecret) {
+      process.env.JWT_SECRET = jwtSecret;
+    }
     process.env.SESSION_SECRET = sessionSecret;
 
     // 1. Mongoose Connection Setup
@@ -140,7 +185,7 @@ export class UniversalAuth {
    * Express middleware to authenticate JWT tokens and verify blacklists
    */
   public static jwtMiddleware() {
-    return [checkBlacklist, authMiddleware];
+    return authMiddleware;
   }
 
   /**
@@ -150,3 +195,4 @@ export class UniversalAuth {
     return deploySenseExpressMiddleware({ serviceName, environment, customUrl });
   }
 }
+

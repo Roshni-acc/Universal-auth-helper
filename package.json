@@ -1,8 +1,8 @@
 {
   "name": "universal-auth-helper",
-  "version": "1.0.0",
-  "main": "dist/app.js",
-  "types": "dist/app.d.ts",
+  "version": "1.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "description": "Production-ready Universal Authentication Engine for Express & MongoDB with embedded React Developer Studio & live token telemetry.",
   "keywords": [
     "express",
@@ -28,6 +28,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build:ui": "vite build",
     "build": "vite build && tsc",
+    "test": "ts-node test/run-tests.ts",
     "start": "node dist/app.js"
   },
   "dependencies": {

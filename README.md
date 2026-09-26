@@ -1,8 +1,8 @@
 # universal-auth-helper
 
-> Unified Express & MongoDB Authentication SDK with Embedded React Developer Studio.
+> Production-ready Universal Authentication Engine for Express & MongoDB with embedded React Developer Studio & live token telemetry.
 
-`universal-auth-helper` is an all-in-one authentication helper designed to streamline JWT Bearer authentication, Express session cookies, Passport.js OAuth2 social logins, and token blacklisting for Express and MongoDB applications.
+`universal-auth-helper` is a zero-boilerplate, all-in-one authentication SDK designed to streamline JWT Bearer authentication, Express session cookies, Passport.js OAuth2 social logins, and token blacklisting for Express and MongoDB applications.
 
 ---
 
@@ -23,9 +23,10 @@ import { UniversalAuth } from "universal-auth-helper";
 const app = express();
 
 // 1. Initialize Universal Auth (Configures JWT, Sessions, Passport, MongoDB & Studio UI)
-UniversalAuth.init(app, {
+const auth = UniversalAuth.init(app, {
   mongoUri: process.env.MONGO_URI,
-  jwtSecret: process.env.JWT_SECRET
+  jwtSecret: process.env.JWT_SECRET, // Strong secret required
+  expiresIn: "24h" // Configurable JWT expiration (e.g., '1h', '7d', '24h')
 });
 
 // 2. Protect routes with built-in JWT middleware
@@ -40,38 +41,98 @@ When your server starts, navigate to `http://localhost:5000` to access the embed
 
 ---
 
-## 🚀 Features
+## 🔑 Core API Usage
 
-- **Unified Auth Engine**: Replaces complex boilerplate across multiple packages with a single `UniversalAuth.init(app)` call.
-- **JWT Bearer Token System**: Registration, password hashing (bcrypt), login token issuance, profile route protection, and token revocation.
-- **Automatic Token Blacklisting**: Blacklists revoked JWT tokens in MongoDB or resilient memory store to prevent replay attacks.
-- **Session Cookie Authentication**: HttpOnly session cookie authentication backed by MongoStore or MemoryStore.
-- **OAuth2 Social Integration**: Unified Passport strategies for Google, GitHub, and zero-config local simulation mode.
-- **Embedded React Developer Studio**: Built-in React 18 UI served directly from your app for live documentation and package telemetry.
-- **DeploySense AI Monitoring**: Real-time automated crash reporting, uncaught exception monitoring, and route error tracking for local & production servers.
+### High-Level SDK Instance (`UniversalAuth`)
+
+```typescript
+import { UniversalAuth } from "universal-auth-helper";
+
+const auth = new UniversalAuth({
+  jwtSecret: process.env.JWT_SECRET,
+  expiresIn: "7d"
+});
+
+// 1. Register User (Includes Email Format & Password Validation)
+const user = await auth.register({
+  email: "user@example.com",
+  password: "strongPassword123",
+  name: "John Doe"
+});
+
+// 2. Login User (Returns JWT token and sanitized user without password hash)
+const { token, user: loggedInUser } = await auth.login("user@example.com", "strongPassword123");
+
+// 3. Fetch User Profile
+const profile = await auth.getProfile(user.id);
+
+// 4. Logout User (Blacklists the token immediately)
+await auth.logout(token);
+```
 
 ---
 
-## 🔒 Security Assumptions & Limitations
+## 🛡️ Route Middleware Protection
 
-Developers integrating this library should be aware of the following security assumptions and recommendations:
+Protect any Express endpoint using `UniversalAuth.jwtMiddleware()` or standalone `authMiddleware`:
 
-1. **Environment Variables**: Never hardcode or commit `JWT_SECRET`, `MONGO_URI`, or OAuth client secrets to version control. Always use `.env` files managed via `dotenv`.
-2. **HTTPS in Production**: Session cookies and Bearer tokens must be transmitted over encrypted HTTPS connections in production (`NODE_ENV=production`).
-3. **JWT Secret Strength**: Ensure your `JWT_SECRET` is a strong, cryptographically secure random string (at least 32 characters long).
-4. **OAuth Redirect URIs**: Register exact redirect URLs (`/auth/google/callback`) in your Google/GitHub Developer Consoles to prevent open redirect vulnerabilities.
-5. **CORS Policy**: Configure `Access-Control-Allow-Origin` headers appropriately for your specific client domains when serving cross-origin APIs.
+```typescript
+import express from "express";
+import { UniversalAuth } from "universal-auth-helper";
+
+const app = express();
+
+// Automatically extracts Authorization: Bearer <token>, checks JWT signature, handles TokenExpiredError, checks revocation blacklist, and attaches req.user
+app.get("/profile", UniversalAuth.jwtMiddleware(), (req, res) => {
+  res.json({ status: true, user: req.user });
+});
+```
 
 ---
 
-## 📖 Guides & Documentation
+## 📦 Direct Service & Controller Exports
 
-- [DeploySense AI Integration Guide](DEPLOYSENSE_GUIDE.md): Local development setup, custom endpoint routing, and cloud error tracking.
-- [Publishing & Lifecycle Maintenance Guide](PUBLISHING_GUIDE.md): Complete instructions on publishing to NPM, managing live Render/Netlify deployments, releasing package updates, and archiving/deleting project assets.
+For custom application architectures, `universal-auth-helper` exports low-level services and controllers:
+
+```typescript
+import {
+  UniversalAuth,
+  JwtService,
+  JwtController,
+  SessionService,
+  Auth2Service,
+  auth2Controller,
+  authMiddleware,
+  checkBlacklist
+} from "universal-auth-helper";
+
+const jwtService = new JwtService({
+  jwtSecret: process.env.JWT_SECRET,
+  expiresIn: "1h"
+});
+```
+
+---
+
+## 🚀 Key Features & Security Design
+
+- **Unified Auth Engine**: Replaces complex boilerplate with a single `UniversalAuth.init(app)` or `new UniversalAuth()` call.
+- **Strict Input Validation**: Validates email format, missing fields, minimum password length (>= 6 chars), and rejects duplicate registrations.
+- **Obfuscated Login Errors**: Uniform `"Invalid email or password"` error prevents account enumeration vulnerabilities.
+- **Sensitive Data Filtering**: Password hashes are strictly omitted from all registration, login, profile, session, and OAuth responses.
+- **Active Token Revocation**: Logout immediately blacklists the JWT in MongoDB or resilient memory store; protected middleware rejects blacklisted tokens with 401.
+- **Token Expiration Handling**: Middleware catches `TokenExpiredError` specifically and returns `{ status: false, message: "Token expired", error: "Token expired" }`.
+- **Full TypeScript Support**: Includes TypeScript interfaces (`AuthConfig`, `RegisterData`, `AuthUser`, `AuthResponse`) and ambient `Express.Request.user` typing.
+
+---
+
+## 🔒 Security Requirements
+
+1. **JWT_SECRET Configuration**: Always set a strong `JWT_SECRET` environment variable (at least 32 characters long).
+2. **HTTPS in Production**: Transmit Bearer tokens over encrypted HTTPS in production (`NODE_ENV=production`).
 
 ---
 
 ## 📄 License
 
 [MIT License](LICENSE) © 2026 Roshni Singh
-
